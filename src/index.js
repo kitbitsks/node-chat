@@ -2,6 +2,7 @@ const path = require('path')
 const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
+const Filter = require('bad-words')
 const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
@@ -10,18 +11,31 @@ const publicDirPath = path.join(__dirname,'../public')
 
 app.use(express.static(publicDirPath))
 
-let count = 0
+// let count = 0
+let message = 'Welcome to NodeJS based Chat APP!'
 
 io.on('connection', (socket) => {
-    console.log('socket connection established !')
-    socket.emit('countUpdated', count)
+    console.log('New Socket Connection!')
+    socket.emit('message',message)
+    socket.broadcast.emit('message', 'A new user has joined !')
+    socket.on('sendMessage',(textRecievedAndSentToOthers,callback)=>{
+        console.log('this is callback')
+        // console.log(callback.toString())
+        // console.log(textRecievedAndSentToOthers)
+        const filter = new Filter()
+        if(filter.isProfane(textRecievedAndSentToOthers)){
+            return callback('Profanity is not allowed !')
+        }
+        io.emit('message',textRecievedAndSentToOthers)
+        callback()
 
-    socket.on('increament',()=>{
-        count++
-        // emit to specific connection
-        // socket.emit('countUpdated', count)
-        // emit event to all connection
-        io.emit('countUpdated', count)        
+    })
+    socket.on('geolocation',(geoLocation,callback)=>{
+        io.emit('message',`https://google.com/maps?q=${geoLocation.latitude},${geoLocation.longitude}`)
+        callback()
+    })
+    socket.on('disconnect',(message)=>{
+        io.emit('message', 'Someone has left the chatroom !')
     })
 })
 
