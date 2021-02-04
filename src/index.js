@@ -20,8 +20,6 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('message', 'A new user has joined !')
     socket.on('sendMessage',(textRecievedAndSentToOthers,callback)=>{
         console.log('this is callback')
-        // console.log(callback.toString())
-        // console.log(textRecievedAndSentToOthers)
         const filter = new Filter()
         if(filter.isProfane(textRecievedAndSentToOthers)){
             return callback('Profanity is not allowed !')
@@ -31,7 +29,7 @@ io.on('connection', (socket) => {
 
     })
     socket.on('geolocation',(geoLocation,callback)=>{
-        io.emit('message',`https://google.com/maps?q=${geoLocation.latitude},${geoLocation.longitude}`)
+        io.emit('location-message',`https://google.com/maps?q=${geoLocation.latitude},${geoLocation.longitude}`)
         callback()
     })
     socket.on('disconnect',(message)=>{
